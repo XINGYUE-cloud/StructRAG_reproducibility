@@ -1,0 +1,73 @@
+{
+  "generator": "build_person_questions.py",
+  "profiles_path": "data\\benchmark\\profiles\\people_profiles.jsonl",
+  "num_units": 30,
+  "num_profiles": 1838,
+  "num_questions": 2921,
+  "per_unit_counts": {
+    "U0001": 99,
+    "U0002": 100,
+    "U0003": 93,
+    "U0004": 92,
+    "U0005": 100,
+    "U0006": 94,
+    "U0007": 100,
+    "U0008": 100,
+    "U0009": 100,
+    "U0010": 97,
+    "U0011": 100,
+    "U0012": 95,
+    "U0013": 100,
+    "U0014": 97,
+    "U0015": 99,
+    "U0016": 100,
+    "U0017": 97,
+    "U0018": 100,
+    "U0019": 100,
+    "U0020": 95,
+    "U0021": 97,
+    "U0022": 92,
+    "U0023": 96,
+    "U0024": 91,
+    "U0025": 100,
+    "U0026": 98,
+    "U0027": 91,
+    "U0028": 99,
+    "U0029": 100,
+    "U0030": 99
+  },
+  "task_counts": {
+    "单人物档案查询": 600,
+    "家庭成员查询": 600,
+    "派生亲属关系推理": 600,
+    "多步亲属链路推理": 521,
+    "属性筛选型关系问题": 600
+  },
+  "difficulty_counts": {
+    "简单-单块": 600,
+    "简单-列表筛选": 600,
+    "中等-派生关系": 600,
+    "中等-2跳": 423,
+    "困难-3跳": 98,
+    "中等-多块筛选": 600
+  },
+  "task_files": {
+    "单人物档案查询": "person_attribute.jsonl",
+    "家庭成员查询": "family_member.jsonl",
+    "派生亲属关系推理": "derived_kinship.jsonl",
+    "多步亲属链路推理": "multi_hop_kinship.jsonl",
+    "属性筛选型关系问题": "attribute_filter.jsonl"
+  },
+  "combined_file": "all_questions.jsonl",
+  "seed": 42,
+  "per_type_limit": 20,
+  "notes": [
+    "This script only generates person-profile QA, not project/organization/time QA.",
+    "Each task family is written to a separate JSONL file.",
+    "all_questions.jsonl is only a convenience combined copy.",
+    "QA is representation-agnostic and does not contain rendered context.",
+    "gold_entity_ids should be mapped to text/table/triples/graph views in a later sampling script.",
+    "Derived kinship relations such as 哥哥、妹妹、伯父 appear only in QA and reasoning paths, not in the base KB.",
+    "Internal profile fields such as generation/family_id are not emitted into questions."
+  ]
+}

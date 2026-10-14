@@ -34,6 +34,24 @@ LLM/GPT-4 evaluation protocol.
 - `prompts/`: public StructRAG prompt templates used by the runners.
 - `docs/`: paper notes, protocol, limitations, and experiment records.
 
+The generated synthetic benchmark and router splits used for the local controlled
+experiments are included under `data/`. Model weights, server logs, checkpoints,
+archives, secrets, and external official benchmark downloads are intentionally
+excluded from this repository.
+
+## Included Synthetic Data
+
+`data/benchmark/` and `data/router/` contain the fixed-seed synthetic data used
+for the controlled four-view baseline. It contains 30 independent generated
+information units, 1,838 generated people, 5,740 generated base relations, and
+2,921 generated questions. The router split is unit-disjoint: 900 train, 240
+validation, and 240 test examples. See [`data/README.md`](data/README.md) for
+the exact contents and scope.
+
+These are generated educational data, distinct from the authors' official Loong
+source set. Official Loong data and documents must still be obtained from the
+upstream sources below; their downloaded copies are not redistributed here.
+
 ## Public Data
 
 Download the official Loong files from the upstream projects rather than

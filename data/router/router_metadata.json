@@ -1,0 +1,87 @@
+{
+  "seed": 42,
+  "candidate_structures": [
+    "chunk",
+    "table",
+    "triples",
+    "graph"
+  ],
+  "task_to_label": {
+    "单人物档案查询": "chunk",
+    "家庭成员查询": "triples",
+    "派生亲属关系推理": "graph",
+    "多步亲属链路推理": "graph",
+    "属性筛选型关系问题": "table"
+  },
+  "split_units": {
+    "train": [
+      "U0001",
+      "U0004",
+      "U0007",
+      "U0008",
+      "U0009",
+      "U0011",
+      "U0013",
+      "U0015",
+      "U0017",
+      "U0019",
+      "U0020",
+      "U0022",
+      "U0023",
+      "U0025",
+      "U0026",
+      "U0027",
+      "U0028",
+      "U0030"
+    ],
+    "validation": [
+      "U0005",
+      "U0006",
+      "U0012",
+      "U0014",
+      "U0021",
+      "U0024"
+    ],
+    "test": [
+      "U0002",
+      "U0003",
+      "U0010",
+      "U0016",
+      "U0018",
+      "U0029"
+    ]
+  },
+  "counts": {
+    "train": {
+      "rows": 900,
+      "labels": {
+        "chunk": 225,
+        "graph": 225,
+        "table": 225,
+        "triples": 225
+      },
+      "units": 18
+    },
+    "validation": {
+      "rows": 240,
+      "labels": {
+        "chunk": 60,
+        "graph": 60,
+        "table": 60,
+        "triples": 60
+      },
+      "units": 6
+    },
+    "test": {
+      "rows": 240,
+      "labels": {
+        "chunk": 60,
+        "graph": 60,
+        "table": 60,
+        "triples": 60
+      },
+      "units": 6
+    }
+  },
+  "note": "Labels are a deterministic representation-to-task proxy over the four views supplied by the dataset generator. They are not the paper's five-class LLM-judged DPO labels."
+}

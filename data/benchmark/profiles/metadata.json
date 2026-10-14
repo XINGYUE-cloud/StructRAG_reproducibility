@@ -1,0 +1,200 @@
+{
+  "version": "person_profile_world_v0.2",
+  "seed": 42,
+  "n_units": 30,
+  "families_per_unit": 6,
+  "profile_fields_added_in_v0.2": [
+    "level",
+    "work_years",
+    "work_status",
+    "strength_scenarios",
+    "appearance"
+  ],
+  "relation_policy": "底层只保存父亲、母亲、配偶、孩子；哥哥、妹妹、伯父等关系后续由规则推导。",
+  "outputs": {
+    "people_profiles": "people_profiles.jsonl",
+    "relations_basic": "relations_basic.jsonl"
+  },
+  "unit_summaries": [
+    {
+      "unit_id": "U0001",
+      "n_people": 66,
+      "n_basic_relations": 206,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0002",
+      "n_people": 62,
+      "n_basic_relations": 194,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0003",
+      "n_people": 54,
+      "n_basic_relations": 166,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0004",
+      "n_people": 56,
+      "n_basic_relations": 172,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0005",
+      "n_people": 70,
+      "n_basic_relations": 224,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0006",
+      "n_people": 64,
+      "n_basic_relations": 202,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0007",
+      "n_people": 69,
+      "n_basic_relations": 218,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0008",
+      "n_people": 62,
+      "n_basic_relations": 194,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0009",
+      "n_people": 67,
+      "n_basic_relations": 210,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0010",
+      "n_people": 60,
+      "n_basic_relations": 186,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0011",
+      "n_people": 62,
+      "n_basic_relations": 194,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0012",
+      "n_people": 61,
+      "n_basic_relations": 192,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0013",
+      "n_people": 65,
+      "n_basic_relations": 204,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0014",
+      "n_people": 57,
+      "n_basic_relations": 178,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0015",
+      "n_people": 67,
+      "n_basic_relations": 212,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0016",
+      "n_people": 57,
+      "n_basic_relations": 174,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0017",
+      "n_people": 60,
+      "n_basic_relations": 186,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0018",
+      "n_people": 59,
+      "n_basic_relations": 182,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0019",
+      "n_people": 70,
+      "n_basic_relations": 222,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0020",
+      "n_people": 57,
+      "n_basic_relations": 178,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0021",
+      "n_people": 57,
+      "n_basic_relations": 176,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0022",
+      "n_people": 54,
+      "n_basic_relations": 166,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0023",
+      "n_people": 64,
+      "n_basic_relations": 202,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0024",
+      "n_people": 50,
+      "n_basic_relations": 150,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0025",
+      "n_people": 68,
+      "n_basic_relations": 216,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0026",
+      "n_people": 58,
+      "n_basic_relations": 178,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0027",
+      "n_people": 56,
+      "n_basic_relations": 174,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0028",
+      "n_people": 60,
+      "n_basic_relations": 186,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0029",
+      "n_people": 69,
+      "n_basic_relations": 220,
+      "n_families": 6
+    },
+    {
+      "unit_id": "U0030",
+      "n_people": 57,
+      "n_basic_relations": 178,
+      "n_families": 6
+    }
+  ]
+}

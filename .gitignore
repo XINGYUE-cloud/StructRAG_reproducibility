@@ -8,6 +8,11 @@ venv/
 # Generated experiment artifacts
 data/*
 !data/.gitkeep
+!data/README.md
+!data/benchmark/
+!data/benchmark/**
+!data/router/
+!data/router/**
 results/*
 !results/.gitkeep
 logs/*
@@ -22,9 +27,11 @@ checkpoints/
 *.safetensors
 *.onnx
 
-# Local papers and archives
+# Local papers, external benchmark downloads, and archives
 *.pdf
 *.zip
+data/official_loong_source/
+data/official_loong_processed/
 
 # Secrets and local configuration
 .env

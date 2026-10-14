@@ -1,0 +1,54 @@
+{
+  "version": "person_profile_views_v0.2",
+  "source_profiles": "data\\benchmark\\profiles\\people_profiles.jsonl",
+  "source_relations": "data\\benchmark\\profiles\\relations_basic.jsonl",
+  "n_people": 1838,
+  "n_basic_relations": 5740,
+  "view_types": [
+    "自然语言文本",
+    "表格形式",
+    "三元组形式",
+    "图结构形式"
+  ],
+  "public_profile_fields": [
+    "name",
+    "gender",
+    "age",
+    "personality",
+    "skills",
+    "city",
+    "company",
+    "branch",
+    "department",
+    "team",
+    "position",
+    "level",
+    "work_years",
+    "work_status",
+    "strength_scenarios",
+    "appearance",
+    "father_id",
+    "mother_id",
+    "spouse_id",
+    "children_ids"
+  ],
+  "profile_fields_added_in_v0.2": [
+    "level",
+    "work_years",
+    "work_status",
+    "strength_scenarios",
+    "appearance"
+  ],
+  "outputs": {
+    "自然语言文本": "kb_text.jsonl",
+    "表格形式": "kb_table.jsonl",
+    "三元组形式": "kb_triples.jsonl",
+    "图结构形式": "kb_graph.jsonl",
+    "all_views": "kb_all_views.jsonl"
+  },
+  "internal_fields_removed": [
+    "generation",
+    "family_id"
+  ],
+  "note": "本脚本只生成知识库视图，不生成 QA、项目、派生亲属关系或检索样本。"
+}
