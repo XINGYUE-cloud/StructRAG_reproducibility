@@ -1,0 +1,56 @@
+{
+  "examples": 10,
+  "router_accuracy": 1.0,
+  "exact_match": 0.0,
+  "answer_contains": 0.3,
+  "mean_keyword_recall": 0.4392857142857142,
+  "route_counts": {
+    "algorithm": 2,
+    "catalogue": 2,
+    "chunk": 2,
+    "graph": 2,
+    "table": 2
+  },
+  "per_expected_structure": {
+    "algorithm": {
+      "examples": 2,
+      "router_accuracy": 1.0,
+      "exact_match": 0.0,
+      "answer_contains": 0.0,
+      "mean_keyword_recall": 0.07142857142857142
+    },
+    "catalogue": {
+      "examples": 2,
+      "router_accuracy": 1.0,
+      "exact_match": 0.0,
+      "answer_contains": 0.0,
+      "mean_keyword_recall": 0.625
+    },
+    "chunk": {
+      "examples": 2,
+      "router_accuracy": 1.0,
+      "exact_match": 0.0,
+      "answer_contains": 0.0,
+      "mean_keyword_recall": 0.0
+    },
+    "graph": {
+      "examples": 2,
+      "router_accuracy": 1.0,
+      "exact_match": 0.0,
+      "answer_contains": 1.0,
+      "mean_keyword_recall": 1.0
+    },
+    "table": {
+      "examples": 2,
+      "router_accuracy": 1.0,
+      "exact_match": 0.0,
+      "answer_contains": 0.5,
+      "mean_keyword_recall": 0.5
+    }
+  },
+  "base_model": "Qwen2.5-1.5B-Instruct (server-local path omitted)",
+  "router_adapter": "router_adapter_v3 (server-local path omitted)",
+  "prompts_dir": "prompts",
+  "protocol": "paper-module-order five-type synthetic evaluation",
+  "caveat": "The test data and the two missing router classes are synthetic. This is a protocol-aligned adaptation, not a numerical replication of the paper's Loong evaluation."
+}

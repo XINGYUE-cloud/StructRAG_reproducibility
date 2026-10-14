@@ -25,3 +25,15 @@ This is not a redistribution of the official Loong benchmark or the paper's
 released router preference data. Download those third-party sources from their
 upstream repositories as described in the project README. The files here support
 the repository's separately documented synthetic four-view experiment only.
+
+## Official-Difficulty Five-Type Extension
+
+`official_difficulty_five_type_v2/router_v3/` is a separate five-label extension
+with `chunk`, `table`, `graph`, `algorithm`, and `catalogue`. It contains 3,200
+training, 800 validation, and 1,600 test preference rows. The test difficulty
+counts are 250/300/641/409, matching the official Loong level proportions, and
+`unit_id` is split-disjoint. These are synthetic educational rows generated from
+the supplied person-profile world; they are not the official Loong benchmark or
+the unreleased five-type router set. See
+`docs/OFFICIAL_DIFFICULTY_FIVE_TYPE_EXPERIMENT_20261014.md` for the protocol and
+limitations.

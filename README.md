@@ -31,6 +31,9 @@ LLM/GPT-4 evaluation protocol.
 - `src/run_paper_aligned_five_type_structrag_v1.py` and the synthetic data
   scripts: a separately labelled five-type extension for studying the missing
   `algorithm` and `catalogue` classes.
+- `scripts/build_official_difficulty_five_type_data_v2.py`: creates a five-type
+  extension whose test difficulty proportions follow official Loong levels;
+  see `docs/OFFICIAL_DIFFICULTY_FIVE_TYPE_EXPERIMENT_20261014.md`.
 - `prompts/`: public StructRAG prompt templates used by the runners.
 - `docs/`: paper notes, protocol, limitations, and experiment records.
 
@@ -121,6 +124,8 @@ These tracks must be read separately:
 | --- | --- | --- |
 | Released router | 1,444/362 public pairs, 3 classes | Accuracy 98.34%; Macro-F1 98.33% |
 | Synthetic five-type router | Generated, unit-disjoint, 5 classes | Accuracy 100%; Macro-F1 100% (template-controlled task) |
+| Official-difficulty five-type router | Generated, unit-disjoint, 5 classes; test levels 250/300/641/409 | Accuracy 100%; Macro-F1 100% (1,600-row server test) |
+| Official-difficulty five-stage control | 10 held-out rows, 2 per class | Router accuracy 100%; exact match 0%; answer-contains 30%; keyword recall 43.93% |
 | Synthetic five-stage pipeline | 10 held-out examples | Exact match 0%; answer-contains 0%; keyword recall 5% |
 | Official Loong Qwen run | 1,600 official records, local 1.5B model | 1,435 completed; canonical exact match 0.00%; mean gold-leaf recall 4.10% |
 

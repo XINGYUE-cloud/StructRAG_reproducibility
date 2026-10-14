@@ -1,0 +1,146 @@
+{
+  "version": "official_difficulty_five_type_v2",
+  "source": "supplied person-profile generator",
+  "seed": 20261014,
+  "labels": [
+    "chunk",
+    "table",
+    "graph",
+    "algorithm",
+    "catalogue"
+  ],
+  "official_reference": {
+    "benchmark": "Loong",
+    "level_counts": {
+      "1": 250,
+      "2": 300,
+      "3": 641,
+      "4": 409
+    },
+    "level_weights": {
+      "1": 0.15625,
+      "2": 0.1875,
+      "3": 0.400625,
+      "4": 0.255625
+    },
+    "note": "Only the difficulty distribution is matched; this is not official Loong data."
+  },
+  "split_units": {
+    "train": [
+      "U0001",
+      "U0002",
+      "U0003",
+      "U0004",
+      "U0007",
+      "U0008",
+      "U0009",
+      "U0010",
+      "U0013",
+      "U0014",
+      "U0015",
+      "U0020",
+      "U0023",
+      "U0026",
+      "U0027",
+      "U0028",
+      "U0029",
+      "U0030"
+    ],
+    "validation": [
+      "U0011",
+      "U0012",
+      "U0016",
+      "U0017",
+      "U0019",
+      "U0021"
+    ],
+    "test": [
+      "U0005",
+      "U0006",
+      "U0018",
+      "U0022",
+      "U0024",
+      "U0025"
+    ]
+  },
+  "split_counts": {
+    "train": 3200,
+    "validation": 800,
+    "test": 1600
+  },
+  "split_label_counts": {
+    "train": {
+      "algorithm": 667,
+      "catalogue": 635,
+      "chunk": 625,
+      "graph": 653,
+      "table": 620
+    },
+    "validation": {
+      "algorithm": 174,
+      "catalogue": 158,
+      "chunk": 151,
+      "graph": 176,
+      "table": 141
+    },
+    "test": {
+      "algorithm": 315,
+      "catalogue": 324,
+      "chunk": 315,
+      "graph": 327,
+      "table": 319
+    }
+  },
+  "split_level_counts": {
+    "train": {
+      "1": 500,
+      "2": 600,
+      "3": 1282,
+      "4": 818
+    },
+    "validation": {
+      "1": 125,
+      "2": 150,
+      "3": 321,
+      "4": 204
+    },
+    "test": {
+      "1": 250,
+      "2": 300,
+      "3": 641,
+      "4": 409
+    }
+  },
+  "difficulty_controls": {
+    "1": {
+      "hops": 1,
+      "conditions": 1,
+      "distractors": 0,
+      "hierarchy_depth": 2
+    },
+    "2": {
+      "hops": 2,
+      "conditions": 2,
+      "distractors": 1,
+      "hierarchy_depth": 3
+    },
+    "3": {
+      "hops": 3,
+      "conditions": 3,
+      "distractors": 2,
+      "hierarchy_depth": 4
+    },
+    "4": {
+      "hops": 4,
+      "conditions": 4,
+      "distractors": 3,
+      "hierarchy_depth": 5
+    }
+  },
+  "leakage_policy": "All examples from one unit_id occur in exactly one split.",
+  "candidate_count_by_split": {
+    "train": 9000,
+    "validation": 3000,
+    "test": 3000
+  }
+}

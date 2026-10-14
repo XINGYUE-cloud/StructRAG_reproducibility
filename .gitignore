@@ -13,6 +13,8 @@ data/*
 !data/benchmark/**
 !data/router/
 !data/router/**
+!data/official_difficulty_five_type_v2/
+!data/official_difficulty_five_type_v2/**
 results/*
 !results/.gitkeep
 logs/*

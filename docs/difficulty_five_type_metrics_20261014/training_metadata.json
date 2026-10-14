@@ -1,0 +1,65 @@
+{
+  "experiment": "synthetic five-type router extension",
+  "source": "Synthetic five-type dataset generated from supplied person-profile generator",
+  "base_model": "Qwen2.5-1.5B-Instruct (server-local path omitted)",
+  "candidate_structures": [
+    "chunk",
+    "table",
+    "graph",
+    "algorithm",
+    "catalogue"
+  ],
+  "train_examples": 3200,
+  "validation_examples": 800,
+  "train_label_counts": {
+    "algorithm": 667,
+    "catalogue": 635,
+    "chunk": 625,
+    "graph": 653,
+    "table": 620
+  },
+  "validation_label_counts": {
+    "algorithm": 174,
+    "catalogue": 158,
+    "chunk": 151,
+    "graph": 176,
+    "table": 141
+  },
+  "training_objective": "DPO with LoRA",
+  "actual_dtype": "bfloat16",
+  "hyperparameters": {
+    "epochs": 3.0,
+    "learning_rate": 1e-05,
+    "batch_size": 8,
+    "gradient_accumulation": 2,
+    "lora_rank": 16,
+    "beta": 0.1
+  },
+  "best_validation_dpo_loss": 0.0028624853398650884,
+  "adapter_l2_norm": {
+    "before_training": 24.434749603271484,
+    "after_training": 24.587047576904297,
+    "changed": true
+  },
+  "history": [
+    {
+      "epoch": 1.0,
+      "train_dpo_loss": 0.19657584161148406,
+      "validation_dpo_loss": 0.006683259601704777,
+      "learning_rate": 7.961176263324902e-06
+    },
+    {
+      "epoch": 2.0,
+      "train_dpo_loss": 0.004451727855484933,
+      "validation_dpo_loss": 0.0032550022331997754,
+      "learning_rate": 2.7423332084455543e-06
+    },
+    {
+      "epoch": 3.0,
+      "train_dpo_loss": 0.0029998026945395394,
+      "validation_dpo_loss": 0.0028624853398650884,
+      "learning_rate": 0.0
+    }
+  ],
+  "caveat": "Algorithm and catalogue examples are synthetic because those labels are absent from the public StructRAG router release."
+}
