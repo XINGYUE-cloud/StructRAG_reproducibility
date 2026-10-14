@@ -22,6 +22,10 @@ Loong 预处理代码读取文档后输出普通标题文本，而公开 StructR
 
 论文 Loong 结果使用作者的 step-3 LLM 评测提示，最终输出 score、成功率和 perfect rate。当前没有配置 GPT-4/OpenAI API，所以本项目不伪造论文 LLM score，只保留字符串和证据召回辅助指标。
 
+### 6. GitHub HTTPS 推送进程崩溃
+
+本机的 `git-remote-https.exe` 在向指定 GitHub 仓库推送时出现内存访问冲突。代码、README 和报告均已在本地 Git 提交；远端读取可用，但写入需要在修复本机 Git HTTPS 组件后重新推送，或改用已绑定 GitHub 账户的 SSH key / 细粒度 PAT。该问题与实验代码和服务器任务无关。
+
 ## 尚未消除的差异
 
 - Qwen2.5-1.5B 与论文 Qwen2-7B/Qwen2-72B 的能力和上下文行为不同。
