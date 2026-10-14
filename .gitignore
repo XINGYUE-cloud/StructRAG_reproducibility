@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.cache/
+venv/
+
+# Generated experiment artifacts
+data/*
+!data/.gitkeep
+results/*
+!results/.gitkeep
+logs/*
+!logs/.gitkeep
+
+# Models and large binaries
+models/
+checkpoints/
+*.pt
+*.pth
+*.bin
+*.safetensors
+*.onnx
+
+# Local papers and archives
+*.pdf
+*.zip
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+secrets/
+tmp/
+
+# Editors and operating systems
+!.vscode/
+!.vscode/*.json
+.idea/
+.DS_Store
+Thumbs.db
