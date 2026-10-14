@@ -1,0 +1,35 @@
+{
+  "dataset": "official Loong source set",
+  "base_model": "Qwen2.5-1.5B-Instruct",
+  "execution": "one GPU, checkpointed five-stage public StructRAG module order",
+  "selected_official_examples": 1600,
+  "preparation_exclusions_no_document_fits": 165,
+  "routed_examples": 1435,
+  "completed_examples": 1435,
+  "pipeline_errors": 0,
+  "mean_gold_leaf_recall": 0.04097684993707825,
+  "exact_canonical_match": 0.0,
+  "route_counts": {
+    "chunk": 461,
+    "graph": 213,
+    "table": 761
+  },
+  "per_type": {
+    "financial": {
+      "examples": 558,
+      "mean_gold_leaf_recall": 0.054673721340388,
+      "exact_canonical_match": 0.0
+    },
+    "legal": {
+      "examples": 500,
+      "mean_gold_leaf_recall": 0.056187686303541484,
+      "exact_canonical_match": 0.0
+    },
+    "paper": {
+      "examples": 377,
+      "mean_gold_leaf_recall": 0.0005305039787798409,
+      "exact_canonical_match": 0.0
+    }
+  },
+  "evaluation_caveat": "Canonical exact match and gold-leaf recall are auxiliary metrics, not the paper's GPT-4/LLM semantic score."
+}

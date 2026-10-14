@@ -1,16 +1,17 @@
 # 官方 Loong 最终结果记录
 
-本页在服务器断点任务完成后填写，数据源为同一输出目录中的 `metrics.json`。
+本页来自服务器断点任务完成后写出的 `metrics.json`。模型为
+Qwen2.5-1.5B-Instruct；仅使用一张 GPU 执行。
 
 | 指标 | 数值 |
 | --- | ---: |
-| selected official examples | pending |
-| preparation exclusions (no document fits) | pending |
-| routed examples | pending |
-| completed examples | pending |
-| pipeline errors | pending |
-| exact canonical match | pending |
-| mean gold-leaf recall | pending |
+| selected official examples | 1,600 |
+| preparation exclusions (no document fits) | 165 |
+| routed examples | 1,435 |
+| completed examples | 1,435 |
+| pipeline errors | 0 |
+| exact canonical match | 0.00% (0 / 1,435) |
+| mean gold-leaf recall | 4.10% |
 
 “Preparation exclusions” are rows removed before model routing because no complete
 document fits the configured input budget. They are not model errors. “Pipeline
@@ -19,12 +20,23 @@ extraction/merging.
 
 ## Route distribution
 
-待 `metrics.json` 的 `route_counts` 填入 `chunk`、`table`、`graph` 数量。
+| Structure | Completed predictions |
+| --- | ---: |
+| `chunk` | 461 |
+| `graph` | 213 |
+| `table` | 761 |
 
 ## Per-type
 
-待 `metrics.json` 生成后填入 financial、legal、paper 的样本数和辅助指标；同时
-注明每一类的 completed count，而不是把 preparation exclusions 当作预测失败。
+| Type | Completed | Mean gold-leaf recall | Exact canonical match |
+| --- | ---: | ---: | ---: |
+| financial | 558 | 5.47% | 0.00% |
+| legal | 500 | 5.62% | 0.00% |
+| paper | 377 | 0.05% | 0.00% |
+
+所有 1,435 条已路由样本均完成端到端 pipeline。原始 `metrics.json` 的
+`error_records=165` 是没有完整文档可纳入输入预算的 preparation exclusions，
+不是 pipeline error。
 
 ## 解释
 

@@ -80,10 +80,20 @@ CD640D3CA0E41D3638153506E3CAEE109850B30DE0A4E829862232A2B6302DA8
 - `progress.json` 记录 selected/routed/completed/remaining；
 - 重启时按 ID 跳过已有答案，不覆盖旧结果。
 
-截至本文创建时，断点任务已完成路由记录 1,435 条，165 条因没有任何完整文档可放入预算而记录为 route exclusion，并已进入答案生成阶段。最终 `metrics.json` 以服务器输出为准；在任务完成前不把部分结果称为全量准确率。
+断点任务已完成。1,600 条官方 Loong source rows 中，1,435 条有至少一篇完整
+文档可纳入 18K 输入预算并完成端到端 pipeline；165 条被记录为 preparation
+exclusion，因为没有任何完整文档能进入预算。后者不是路由或答案阶段的模型错误。
+路由分布为 table 761、chunk 461、graph 213；没有 pipeline error。该任务结束后
+GPU 3 已释放，服务器原有内容未被修改或删除。
 
 ## 7. 结果如何解释
 
 公开路由的 98.34% 只说明 Qwen2.5-1.5B 在作者公开的三类偏好测试上表现良好；它不能证明五类路由器或整个 StructRAG 达到论文水平。合成五类的 100% 主要反映任务模板和标签规则清晰。端到端结果必须同时考虑路由、结构化、分解、抽取和合并，不能只看路由准确率。
 
-没有可用的 GPT-4/OpenAI 评测接口时，本项目只报告可审计的 `exact_canonical_match`、`gold_leaf_recall`、路由分布、完成数和错误数，不报告论文意义上的 LLM score。
+最终端到端辅助指标为 `exact_canonical_match=0.00%`（0/1,435）和
+`mean_gold_leaf_recall=4.10%`。financial/legal/paper 的 leaf recall 分别为
+5.47%/5.62%/0.05%。这个结果说明在本次小模型、三类路由、整篇文档预算和公开
+prompt 的组合下，系统没有复现论文的回答质量；尤其公开 graph prompt 针对论文
+引用关系，在 paper 之外并不自然。没有可用的 GPT-4/OpenAI 评测接口时，本项目
+只报告可审计的 `exact_canonical_match`、`gold_leaf_recall`、路由分布和完成数，
+不报告论文意义上的 LLM score。

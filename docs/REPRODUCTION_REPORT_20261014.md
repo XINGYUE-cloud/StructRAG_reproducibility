@@ -10,8 +10,7 @@
 它不是论文数值的逐项重现，因为论文使用 Qwen2-7B/Qwen2-72B、五类路由和
 外部 LLM 评测器，而公开仓库只提供三类路由标签。
 
-服务器上的全量任务完成后，本报告中的“最终结果”以同一输出目录的
-`metrics.json` 为准；任务运行期间的数字只作为进度，不作为准确率结论。
+服务器全量任务已完成；本报告的最终结果来自同一输出目录的 `metrics.json`。
 
 ## 论文内容要点
 
@@ -58,11 +57,17 @@ StructRAG 的出发点是：不同问题适合不同的知识表示。将所有�
 | --- | ---: | ---: | --- |
 | 公开三类路由 Accuracy | 98.34% | 94.38% | 数据/模型不同，不能直接宣称超越 |
 | 公开三类路由 Macro-F1 | 98.33% | 93.42% | 同上 |
-| 官方 Loong selected rows | 待最终 `metrics.json` | 论文全量协议 | 1,600 source rows |
-| 官方 Loong preparation exclusions | 待最终统计 | 未按本预算设置 | 165 条（18K） |
-| 官方 Loong completed | 待最终 `metrics.json` | 论文全量 | 只统计成功完成 pipeline 的行 |
-| canonical exact match | 待最终 `metrics.json` | EM 0.23 | 本项目是字符串诊断指标 |
-| gold-leaf recall | 待最终 `metrics.json` | 无对应论文指标 | 辅助证据覆盖指标 |
+| 官方 Loong selected rows | 1,600 | 论文全量协议 | 官方 source rows |
+| 官方 Loong preparation exclusions | 165 | 未按本预算设置 | 18K 下没有完整文档可纳入 |
+| 官方 Loong completed | 1,435 | 论文全量 | 全部已路由行完成 pipeline |
+| canonical exact match | 0.00% (0/1,435) | EM 0.23 | 本项目是字符串诊断指标 |
+| gold-leaf recall | 4.10% | 无对应论文指标 | 辅助证据覆盖指标 |
+
+最终路由分布：`table=761`、`chunk=461`、`graph=213`。按文档类型的
+gold-leaf recall：financial 5.47%（558 条）、legal 5.62%（500 条）、
+paper 0.05%（377 条）；三类 canonical exact match 均为 0%。`metrics.json`
+中的 165 条 error record 都是准备阶段的 no-document-fits exclusion，pipeline
+阶段没有错误。
 
 ## 与论文不一致的地方
 

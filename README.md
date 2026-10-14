@@ -107,7 +107,7 @@ These tracks must be read separately:
 | Released router | 1,444/362 public pairs, 3 classes | Accuracy 98.34%; Macro-F1 98.33% |
 | Synthetic five-type router | Generated, unit-disjoint, 5 classes | Accuracy 100%; Macro-F1 100% (template-controlled task) |
 | Synthetic five-stage pipeline | 10 held-out examples | Exact match 0%; answer-contains 0%; keyword recall 5% |
-| Official Loong Qwen run | 1,600 official records, local 1.5B model | The final checkpoint metrics are recorded in [`docs/RESULTS_TEMPLATE_20261014.md`](docs/RESULTS_TEMPLATE_20261014.md) after the server run completes |
+| Official Loong Qwen run | 1,600 official records, local 1.5B model | 1,435 completed; canonical exact match 0.00%; mean gold-leaf recall 4.10% |
 
 The paper reports overall Loong LLM/EM scores of `60.38/0.23` and a router
 accuracy/Macro-F1 of `94.38%/93.42%`. Those numbers are included for context
@@ -135,8 +135,10 @@ and the issue log is in
 
 The official Loong run separates four counts: source rows, preparation exclusions
 (no complete document fits the input budget), route completions, and completed
-end-to-end predictions. An exclusion is not a model error. Until `metrics.json`
-is finalized, progress numbers must not be reported as final accuracy.
+end-to-end predictions. The final run had 1,600 source rows, 165 preparation
+exclusions, 1,435 route completions, and 1,435 end-to-end completions. An
+exclusion is not a model error. Per-type metrics and route counts are recorded
+in [`docs/RESULTS_TEMPLATE_20261014.md`](docs/RESULTS_TEMPLATE_20261014.md).
 
 ## Attribution
 
