@@ -34,9 +34,6 @@ LLM/GPT-4 evaluation protocol.
 - `prompts/`: public StructRAG prompt templates used by the runners.
 - `docs/`: paper notes, protocol, limitations, and experiment records.
 
-Generated data, model weights, server logs, checkpoints, archives, and secrets
-are intentionally excluded from this repository.
-
 ## Public Data
 
 Download the official Loong files from the upstream projects rather than
