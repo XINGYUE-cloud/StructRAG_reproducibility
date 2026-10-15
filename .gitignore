@@ -39,6 +39,8 @@ data/official_loong_processed/
 .env
 .env.*
 !.env.example
+!.env.judge.example
+smoke_complex_v3_20261015/
 secrets/
 tmp/
 

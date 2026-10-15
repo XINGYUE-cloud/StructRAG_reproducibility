@@ -34,6 +34,10 @@ LLM/GPT-4 evaluation protocol.
 - `scripts/build_official_difficulty_five_type_data_v2.py`: creates a five-type
   extension whose test difficulty proportions follow official Loong levels;
   see `docs/OFFICIAL_DIFFICULTY_FIVE_TYPE_EXPERIMENT_20261014.md`.
+- `scripts/build_complex_five_type_data_v3.py`: creates the larger verified
+  five-type synthetic corpus in `data/complex_five_type_v3_verified_20261015/`.
+- `src/evaluate_loong_llm_judge.py`: optional cache-first semantic evaluation
+  for completed official predictions.
 - `prompts/`: public StructRAG prompt templates used by the runners.
 - `docs/`: paper notes, protocol, limitations, and experiment records.
 
@@ -115,6 +119,40 @@ The paper's official Loong score cannot be reproduced without the evaluator
 API used by `Loong/src/step3_model_evaluate.py`. This repository reports only
 auditable auxiliary metrics (`exact_canonical_match`, `gold_leaf_recall`,
 route counts, completion counts) unless a compatible evaluator is configured.
+
+### Optional semantic evaluator
+
+The evaluator preserves the requested `gpt-5.6terra` model name and speaks the
+OpenAI-compatible Chat Completions protocol. The configured provider endpoint is
+`https://api.vip1129.cc/v1`; it is a third-party endpoint, not an OpenAI service.
+Copy `.env.judge.example` to `.env.judge.local` (already ignored by Git), fill
+`OPENAI_API_KEY` locally, and never place the key in a commit or chat message:
+
+```bash
+python -m src.evaluate_loong_llm_judge \
+  --predictions outputs/official_loong_checkpoint/predictions.jsonl \
+  --output-dir outputs/llm_judge_20261015 \
+  --config .env.judge.local
+```
+
+The command writes `judgments.jsonl`, `metrics.json`, and `errors.jsonl`.
+Without a key, use `--dry-run` only with fixture rows containing
+`judge_response`; dry-run results are not live paper scores.
+
+### Complex five-type v3 corpus
+
+The v3 generator produces 16,000 train, 2,000 validation, and 3,200 test rows
+for `chunk`, `table`, `graph`, `algorithm`, and `catalogue`. It enforces
+unit/source-root disjoint splits and records evidence IDs, graph hop counts,
+condition counts, distractors, document counts, and catalogue depth. The corpus
+is synthetic and must be reported separately from official Loong evaluation;
+`algorithm` and `catalogue` are not released official router labels.
+
+```bash
+python scripts/build_complex_five_type_data_v3.py \
+  --profiles data/benchmark/profiles/people_profiles.jsonl \
+  --out-dir data/complex_five_type_v3_verified_20261015
+```
 
 ## Results So Far
 

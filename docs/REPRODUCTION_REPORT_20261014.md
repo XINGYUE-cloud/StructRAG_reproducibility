@@ -51,6 +51,23 @@ StructRAG 的出发点是：不同问题适合不同的知识表示。将所有�
 的 165 条。后者是**准备阶段排除**，不是模型预测错误。30K 预算下对应为
 177、1,389、34。当前服务器任务使用 18K 预处理数据、32K 模型上下文和 GPU 3。
 
+## 2026-10-15 复杂五类扩展数据
+
+为补充公开路由数据中缺失的 `algorithm` 和 `catalogue`，另行生成了
+`data/complex_five_type_v3_verified_20261015/`。该目录不是官方 Loong 数据，
+不能与官方测试结果合并解读。
+
+| split | rows | source roots | labels |
+| --- | ---: | ---: | --- |
+| train | 16,000 | 18 | five labels |
+| validation | 2,000 | 6 | five labels |
+| test | 3,200 | 6 | five labels |
+
+全量 21,200 行的 `unit_id`、`(query, documents)` 均唯一，证据 grounding audit
+为 21,200/21,200；三个 split 的 source roots 互不重叠。每行保存图跳数、条件数、
+干扰项数量、文档数、近似字符长度和目录深度等控制字段。这里的 level 是生成器的
+实验控制，不能称为官方 Loong 难度等级。
+
 ## 结果记录
 
 | 项目 | 本次结果 | 论文结果 | 备注 |
