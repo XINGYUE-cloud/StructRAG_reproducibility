@@ -1,0 +1,104 @@
+{
+  "examples": 3200,
+  "accuracy": 1.0,
+  "macro_f1": 1.0,
+  "labels": [
+    "chunk",
+    "table",
+    "graph",
+    "algorithm",
+    "catalogue"
+  ],
+  "confusion_matrix": [
+    [
+      624,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      623,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      654,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      645,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      654
+    ]
+  ],
+  "per_label": {
+    "chunk": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 624.0
+    },
+    "table": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 623.0
+    },
+    "graph": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 654.0
+    },
+    "algorithm": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 645.0
+    },
+    "catalogue": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 654.0
+    },
+    "accuracy": 1.0,
+    "macro avg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 3200.0
+    },
+    "weighted avg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 3200.0
+    }
+  },
+  "prediction_counts": {
+    "algorithm": 645,
+    "catalogue": 654,
+    "chunk": 624,
+    "graph": 654,
+    "table": 623
+  },
+  "base_model": "/data/wxn/structrag-qwen25-15b-single-gpu/models/Qwen2.5-1.5B-Instruct",
+  "adapter": "/data/wxn/structrag_repro_20261015_gpt56terra/outputs/v3_router_dpo_20261015_batch8",
+  "caveat": "Synthetic unit-disjoint five-type evaluation. It is not the paper's unreleased five-type router test set."
+}

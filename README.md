@@ -162,6 +162,7 @@ These tracks must be read separately:
 | --- | --- | --- |
 | Released router | 1,444/362 public pairs, 3 classes | Accuracy 98.34%; Macro-F1 98.33% |
 | Synthetic five-type router | Generated, unit-disjoint, 5 classes | Accuracy 100%; Macro-F1 100% (template-controlled task) |
+| Complex v3 five-type router | 16,000 train / 2,000 validation / 3,200 test; unit/source-root disjoint | Accuracy 100%; Macro-F1 100% (1-epoch LoRA-DPO, Qwen2.5-1.5B) |
 | Official-difficulty five-type router | Generated, unit-disjoint, 5 classes; test levels 250/300/641/409 | Accuracy 100%; Macro-F1 100% (1,600-row server test) |
 | Official-difficulty five-stage control | 10 held-out rows, 2 per class | Router accuracy 100%; exact match 0%; answer-contains 30%; keyword recall 43.93% |
 | Synthetic five-stage pipeline | 10 held-out examples | Exact match 0%; answer-contains 0%; keyword recall 5% |

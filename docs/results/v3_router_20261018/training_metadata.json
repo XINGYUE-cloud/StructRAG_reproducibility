@@ -1,0 +1,53 @@
+{
+  "experiment": "synthetic five-type router extension",
+  "source": "Synthetic five-type dataset generated from supplied person-profile generator",
+  "base_model": "/data/wxn/structrag-qwen25-15b-single-gpu/models/Qwen2.5-1.5B-Instruct",
+  "candidate_structures": [
+    "chunk",
+    "table",
+    "graph",
+    "algorithm",
+    "catalogue"
+  ],
+  "train_examples": 16000,
+  "validation_examples": 2000,
+  "train_label_counts": {
+    "algorithm": 3213,
+    "catalogue": 3236,
+    "chunk": 3221,
+    "graph": 3079,
+    "table": 3251
+  },
+  "validation_label_counts": {
+    "algorithm": 426,
+    "catalogue": 396,
+    "chunk": 406,
+    "graph": 376,
+    "table": 396
+  },
+  "training_objective": "DPO with LoRA",
+  "actual_dtype": "bfloat16",
+  "hyperparameters": {
+    "epochs": 1.0,
+    "learning_rate": 1e-05,
+    "batch_size": 8,
+    "gradient_accumulation": 2,
+    "lora_rank": 16,
+    "beta": 0.1
+  },
+  "best_validation_dpo_loss": 0.001306752267992124,
+  "adapter_l2_norm": {
+    "before_training": 24.447874069213867,
+    "after_training": 24.641979217529297,
+    "changed": true
+  },
+  "history": [
+    {
+      "epoch": 1.0,
+      "train_dpo_loss": 0.052993154658644924,
+      "validation_dpo_loss": 0.001306752267992124,
+      "learning_rate": 0.0
+    }
+  ],
+  "caveat": "Algorithm and catalogue examples are synthetic because those labels are absent from the public StructRAG router release."
+}

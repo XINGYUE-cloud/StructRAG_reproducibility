@@ -15,6 +15,13 @@ deleted. New remote runs must use a fresh timestamped output directory.
 - All 21,200 rows have unique IDs and grounded evidence in their source documents.
 - Official Loong rows are not present in the synthetic corpus.
 
+The completed v3 router run used Qwen2.5-1.5B with one epoch of LoRA-DPO
+(batch size 8, gradient accumulation 2, learning rate 1e-5). Its validation
+DPO loss was 0.00130675. On the held-out 3,200-row v3 test split, Accuracy and
+Macro-F1 were both 1.0000; the confusion matrix was diagonal for all five
+labels. This is a routed structure classification result, not an end-to-end
+answer accuracy result.
+
 The corpus is generated educational data. It is not the official Loong benchmark,
 and its difficulty controls are experimental controls rather than official Loong
 difficulty annotations.
