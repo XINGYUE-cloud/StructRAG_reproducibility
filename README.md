@@ -148,6 +148,9 @@ condition counts, distractors, document counts, and catalogue depth. The corpus
 is synthetic and must be reported separately from official Loong evaluation;
 `algorithm` and `catalogue` are not released official router labels.
 
+For convenience, the verified v3 JSONL files are also available as the
+33.4 MB archive [`data/complex_five_type_v3_verified_20261015_upload.zip`](data/complex_five_type_v3_verified_20261015_upload.zip).
+
 ```bash
 python scripts/build_complex_five_type_data_v3.py \
   --profiles data/benchmark/profiles/people_profiles.jsonl \
