@@ -93,6 +93,18 @@ paper 0.05%（377 条）；三类 canonical exact match 均为 0%。`metrics.jso
 中的 165 条 error record 都是准备阶段的 no-document-fits exclusion，pipeline
 阶段没有错误。
 
+## 2026-10-18 语义评测
+
+使用服务商 `https://api.vip1129.cc/v1` 的可用模型 `gpt-5.6-terra` 对上述
+1,435 条完成预测进行逐条语义评分，评测请求错误为 0。总体平均分为
+**5.3415/100**；financial、legal、paper 分别为 6.4104、5.0420、4.1565，
+chunk、table、graph 分别为 6.2126、5.4100、3.2113。
+
+该模型名由用户确认使用，是服务商提供的 `gpt-5.6-terra`，不是最初要求的
+不可用名称 `gpt-5.6terra`。该分数不能直接与论文 GPT-4 的 60.38 比较；它使用
+不同模型、评测服务、数据覆盖和提示条件。语义评测指标记录在
+`docs/results/official_llm_judge_20261018/metrics.json`。
+
 ## 与论文不一致的地方
 
 - 公开路由数据只有 `chunk/table/graph`，缺少 `algorithm/catalogue`；两类扩展

@@ -170,6 +170,7 @@ These tracks must be read separately:
 | Official-difficulty five-stage control | 10 held-out rows, 2 per class | Router accuracy 100%; exact match 0%; answer-contains 30%; keyword recall 43.93% |
 | Synthetic five-stage pipeline | 10 held-out examples | Exact match 0%; answer-contains 0%; keyword recall 5% |
 | Official Loong Qwen run | 1,600 official records, local 1.5B model | 1,435 completed; canonical exact match 0.00%; mean gold-leaf recall 4.10% |
+| Official Loong semantic judge | 1,435 completed predictions; provider model `gpt-5.6-terra` | Mean score 5.34/100; 0 errors |
 
 The paper reports overall Loong LLM/EM scores of `60.38/0.23` and a router
 accuracy/Macro-F1 of `94.38%/93.42%`. Those numbers are included for context

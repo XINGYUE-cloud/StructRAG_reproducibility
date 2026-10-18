@@ -1,0 +1,56 @@
+{
+  "overall": {
+    "examples": 1435,
+    "mean_score": 5.341463414634147
+  },
+  "by_type": {
+    "financial": {
+      "examples": 558,
+      "mean_score": 6.410394265232975
+    },
+    "legal": {
+      "examples": 500,
+      "mean_score": 5.042
+    },
+    "paper": {
+      "examples": 377,
+      "mean_score": 4.156498673740053
+    }
+  },
+  "by_level": {
+    "1": {
+      "examples": 214,
+      "mean_score": 6.799065420560748
+    },
+    "2": {
+      "examples": 279,
+      "mean_score": 8.688172043010752
+    },
+    "3": {
+      "examples": 595,
+      "mean_score": 3.7529411764705882
+    },
+    "4": {
+      "examples": 347,
+      "mean_score": 4.475504322766571
+    }
+  },
+  "by_structure": {
+    "chunk": {
+      "examples": 461,
+      "mean_score": 6.212581344902386
+    },
+    "graph": {
+      "examples": 213,
+      "mean_score": 3.211267605633803
+    },
+    "table": {
+      "examples": 761,
+      "mean_score": 5.4099868593955325
+    }
+  },
+  "model": "gpt-5.6-terra",
+  "judged_examples": 1435,
+  "error_examples": 0,
+  "dry_run": false
+}

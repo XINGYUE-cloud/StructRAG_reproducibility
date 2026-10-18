@@ -87,9 +87,29 @@ python -m src.evaluate_loong_llm_judge \
 
 The evaluator caches by question, gold answer, prediction, model, and base URL.
 It validates a bounded score and writes `judgments.jsonl`, `metrics.json`, and
-`errors.jsonl`. Until a valid key is supplied, no live semantic score is
-reported. A dry run only exercises parsing fixtures and cannot stand in for the
-paper's external LLM evaluation.
+`errors.jsonl`. A dry run only exercises parsing fixtures and cannot stand in
+for the paper's external LLM evaluation.
+
+### Completed semantic evaluation (2026-10-18)
+
+The exact requested name `gpt-5.6terra` was unavailable at the provider. The
+user authorized the available name `gpt-5.6-terra`. All 1,435 completed official
+predictions were judged with zero request errors. The overall mean was
+**5.3415/100**:
+
+| Group | Examples | Mean score |
+| --- | ---: | ---: |
+| Overall | 1,435 | 5.3415 |
+| financial | 558 | 6.4104 |
+| legal | 500 | 5.0420 |
+| paper | 377 | 4.1565 |
+| chunk | 461 | 6.2126 |
+| table | 761 | 5.4100 |
+| graph | 213 | 3.2113 |
+
+The score is substantially below the paper's reported Loong LLM score of
+60.38. This comparison is diagnostic only: the model, prompt/evaluator,
+document coverage, and endpoint differ from the paper's GPT-4 setup.
 
 ## Comparison boundary
 
