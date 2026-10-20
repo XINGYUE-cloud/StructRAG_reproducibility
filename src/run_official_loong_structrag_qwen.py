@@ -174,10 +174,12 @@ def decompose(
     maximum: int,
     max_new_tokens: int,
     query_only: bool = False,
+    original_question: str | None = None,
 ) -> tuple[str, list[str]]:
     if query_only:
         # The small local model can corrupt the released decomposition format.
-        return query, [query]
+        selected_question = (original_question or query).strip()
+        return selected_question, [selected_question]
     template = read_prompt(prompts_dir, "decompose.txt")
     raw = generate(tokenizer, model, [{"role": "user", "content": template.format(query=query, kb_info=kb_info)}], max_new_tokens, context_limit)
     questions = [re.sub(r"^\s*(?:\d+[.)、]|[-*])\s*", "", line).strip() for line in raw.splitlines()]
@@ -325,6 +327,7 @@ def main() -> None:
                 tokenizer, model, args.prompts_dir, item["query"], kb_info,
                 args.context_limit, args.max_subqueries, args.max_new_tokens_answer,
                 args.query_only_decomposition,
+                str(row.get("question") or item["query"]),
             )
             evidence = extract(
                 tokenizer, model, item["chosen"], item["query"], subqueries,

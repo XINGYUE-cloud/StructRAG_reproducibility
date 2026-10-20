@@ -436,6 +436,7 @@ def main() -> None:
                         args.max_subqueries,
                         args.max_new_tokens_answer,
                         args.query_only_decomposition,
+                        str(row.get("question") or query),
                     )
                     evidence = extract(
                         tokenizer,
