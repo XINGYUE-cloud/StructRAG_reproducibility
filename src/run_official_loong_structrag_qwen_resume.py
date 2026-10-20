@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import gc
+import hashlib
 import json
 import os
 import time
@@ -53,6 +54,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-subqueries", type=int, default=4)
     parser.add_argument("--max-new-tokens-structure", type=int, default=512)
     parser.add_argument("--max-new-tokens-answer", type=int, default=384)
+    parser.add_argument(
+        "--query-only-decomposition",
+        action="store_true",
+        help="Use the original question as the sole subquery instead of model-generated decomposition.",
+    )
+    parser.add_argument(
+        "--strict-grounding",
+        action="store_true",
+        help="Constrain extraction and merging to supplied evidence and preserve task formats.",
+    )
     return parser.parse_args()
 
 
@@ -130,6 +141,54 @@ def write_progress(
             "last_id": last_id,
         },
     )
+
+
+def run_config(args: argparse.Namespace) -> dict[str, Any]:
+    """Return the immutable settings that define one resumable experiment."""
+
+    prompt_hash = hashlib.sha256()
+    for name in ("construct_graph.txt", "construct_table.txt", "decompose.txt"):
+        prompt_hash.update(name.encode("utf-8"))
+        prompt_hash.update((args.prompts_dir / name).read_bytes())
+    return {
+        "pipeline_revision": "strict-grounding-query-only-v1",
+        "dataset": str(args.dataset.resolve()),
+        "base_model": str(args.base_model.resolve()),
+        "router_adapter": str(args.router_adapter.resolve()),
+        "prompts_dir": str(args.prompts_dir.resolve()),
+        "prompt_hash": prompt_hash.hexdigest(),
+        "context_limit": args.context_limit,
+        "max_samples": args.max_samples,
+        "stratified": args.stratified,
+        "seed": args.seed,
+        "max_subqueries": args.max_subqueries,
+        "max_new_tokens_structure": args.max_new_tokens_structure,
+        "max_new_tokens_answer": args.max_new_tokens_answer,
+        "query_only_decomposition": args.query_only_decomposition,
+        "strict_grounding": args.strict_grounding,
+    }
+
+
+def ensure_run_config(path: Path, config: dict[str, Any]) -> None:
+    """Refuse to resume an output directory with different pipeline settings."""
+
+    if path.exists():
+        existing = json.loads(path.read_text(encoding="utf-8"))
+        if existing != config:
+            raise RuntimeError(
+                f"Output directory already belongs to a different run configuration: {path}"
+            )
+        return
+    existing_outputs = (
+        path.parent / "routes.jsonl",
+        path.parent / "predictions.jsonl",
+        path.parent / "errors.jsonl",
+    )
+    if any(output.exists() and output.stat().st_size > 0 for output in existing_outputs):
+        raise RuntimeError(
+            f"Checkpoint files exist without a run configuration; use a new output directory: {path.parent}"
+        )
+    atomic_json(path, config)
 
 
 def route_record(row: dict[str, Any], query: str, chosen: str, raw: str) -> dict[str, Any]:
@@ -226,6 +285,8 @@ def write_metrics(
         "base_model": str(args.base_model),
         "router_adapter": str(args.router_adapter),
         "context_limit": args.context_limit,
+        "query_only_decomposition": args.query_only_decomposition,
+        "strict_grounding": args.strict_grounding,
         "protocol": "Official Loong source set, public StructRAG module order, local Qwen2.5-1.5B; resumable whole-document preparation without tokenizer truncation.",
         "evaluation_caveat": "These auxiliary string metrics are not the authors' GPT-4 score.",
     }
@@ -239,6 +300,7 @@ def main() -> None:
     if args.context_limit <= 0:
         raise ValueError("--context-limit must be positive")
     args.output_dir.mkdir(parents=True, exist_ok=True)
+    ensure_run_config(args.output_dir / "run_config.json", run_config(args))
 
     routes_path = args.output_dir / "routes.jsonl"
     predictions_path = args.output_dir / "predictions.jsonl"
@@ -373,6 +435,7 @@ def main() -> None:
                         args.context_limit,
                         args.max_subqueries,
                         args.max_new_tokens_answer,
+                        args.query_only_decomposition,
                     )
                     evidence = extract(
                         tokenizer,
@@ -383,6 +446,7 @@ def main() -> None:
                         structured,
                         args.context_limit,
                         args.max_new_tokens_answer,
+                        args.strict_grounding,
                     )
                     answer = merge(
                         tokenizer,
@@ -393,6 +457,8 @@ def main() -> None:
                         structure,
                         args.context_limit,
                         args.max_new_tokens_answer,
+                        args.strict_grounding,
+                        str(row.get("type", "")),
                     )
                     prediction = prediction_record(
                         row,

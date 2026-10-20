@@ -41,6 +41,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-subqueries", type=int, default=4)
     parser.add_argument("--max-new-tokens-structure", type=int, default=512)
     parser.add_argument("--max-new-tokens-answer", type=int, default=384)
+    parser.add_argument(
+        "--query-only-decomposition",
+        action="store_true",
+        help="Use the original question as the sole subquery instead of model-generated decomposition.",
+    )
+    parser.add_argument(
+        "--strict-grounding",
+        action="store_true",
+        help="Constrain extraction and merging to supplied evidence and preserve task formats.",
+    )
     return parser.parse_args()
 
 
@@ -154,7 +164,20 @@ def construct(tokenizer, model, prompts_dir: Path, query: str, structure: str, d
     ]
 
 
-def decompose(tokenizer, model, prompts_dir: Path, query: str, kb_info: str, context_limit: int, maximum: int, max_new_tokens: int) -> tuple[str, list[str]]:
+def decompose(
+    tokenizer,
+    model,
+    prompts_dir: Path,
+    query: str,
+    kb_info: str,
+    context_limit: int,
+    maximum: int,
+    max_new_tokens: int,
+    query_only: bool = False,
+) -> tuple[str, list[str]]:
+    if query_only:
+        # The small local model can corrupt the released decomposition format.
+        return query, [query]
     template = read_prompt(prompts_dir, "decompose.txt")
     raw = generate(tokenizer, model, [{"role": "user", "content": template.format(query=query, kb_info=kb_info)}], max_new_tokens, context_limit)
     questions = [re.sub(r"^\s*(?:\d+[.)、]|[-*])\s*", "", line).strip() for line in raw.splitlines()]
@@ -162,19 +185,35 @@ def decompose(tokenizer, model, prompts_dir: Path, query: str, kb_info: str, con
     return raw, questions[:maximum] or [query]
 
 
-def extract(tokenizer, model, structure: str, query: str, subqueries: list[str], structured: list[str], context_limit: int, max_new_tokens: int) -> list[str]:
+def extract(
+    tokenizer,
+    model,
+    structure: str,
+    query: str,
+    subqueries: list[str],
+    structured: list[str],
+    context_limit: int,
+    max_new_tokens: int,
+    strict_grounding: bool = False,
+) -> list[str]:
+    grounding = (
+        "\nUse only entities, numbers, titles, and relationships explicitly present in the supplied evidence. "
+        "Do not infer, invent, or complete missing facts. Return only relevant supported evidence; if this document has no relevant evidence, say NO RELEVANT EVIDENCE."
+        if strict_grounding
+        else ""
+    )
     if structure == "chunk":
         composed = "\n".join(subqueries)
         return [
-            generate(tokenizer, model, [{"role": "user", "content": f"Instruction:\nAnswer the Query based on the given Document.\n\nQuery:\n{composed}\n\nDocument:\n{chunk}\n\nOutput:"}], max_new_tokens, context_limit)
+            generate(tokenizer, model, [{"role": "user", "content": f"Instruction:\nAnswer the Query based on the given Document.{grounding}\n\nQuery:\n{composed}\n\nDocument:\n{chunk}\n\nOutput:"}], max_new_tokens, context_limit)
             for chunk in structured
         ]
     if structure == "table":
-        instruction = "The following Tables show multiple independent tables built from multiple documents.\nFilter these tables according to the query, retaining only the table information that helps answer the query.\nNote that you need to analyze the attributes and entities mentioned in the query and filter accordingly.\nThe information needed to answer the query must exist in one or several tables, and you need to check these tables one by one."
+        instruction = "The following Tables show multiple independent tables built from multiple documents.\nFilter these tables according to the query, retaining only the table information that helps answer the query.\nNote that you need to analyze the attributes and entities mentioned in the query and filter accordingly.\nThe information needed to answer the query must exist in one or several tables, and you need to check these tables one by one." + grounding
         title = "Tables"
         contents = "".join(f"Table {index}:\n{table}\n\n" for index, table in enumerate(structured, start=1))
     elif structure == "graph":
-        instruction = "According to the query, filter out the triples from all triples in the graph that can help answer the query.\nNote, carefully analyze the entities and relationships mentioned in the query and filter based on this information."
+        instruction = "According to the query, filter out the triples from all triples in the graph that can help answer the query.\nNote, carefully analyze the entities and relationships mentioned in the query and filter based on this information." + grounding
         title = "Graphs"
         contents = "\n\n".join(structured)
     else:
@@ -185,12 +224,37 @@ def extract(tokenizer, model, structure: str, query: str, subqueries: list[str],
     ]
 
 
-def merge(tokenizer, model, query: str, subqueries: list[str], evidence: list[str], structure: str, context_limit: int, max_new_tokens: int) -> str:
+def merge(
+    tokenizer,
+    model,
+    query: str,
+    subqueries: list[str],
+    evidence: list[str],
+    structure: str,
+    context_limit: int,
+    max_new_tokens: int,
+    strict_grounding: bool = False,
+    task_type: str | None = None,
+) -> str:
     if structure == "chunk":
         retrieval = f"Subquery: {query}\nRetrieval results:\n{' '.join(evidence)}\n\n"
     else:
         retrieval = "".join(f"Subquery: {question}\nRetrieval results:\n{result}\n\n" for question, result in zip(subqueries, evidence))
-    instruction = "1. Answer the Question based on retrieval results. \n2. Find the relevant information from given retrieval results and output as detailed, specific, and lengthy as possible. \n3. The output must be a coherent and smooth piece of text."
+    if not strict_grounding:
+        instruction = "1. Answer the Question based on retrieval results. \n2. Find the relevant information from given retrieval results and output as detailed, specific, and lengthy as possible. \n3. The output must be a coherent and smooth piece of text."
+    else:
+        instruction = (
+            "1. Answer the Question using only the supplied retrieval results.\n"
+            "2. Never invent or infer entities, numbers, dates, titles, citations, or relationships absent from the retrieval results.\n"
+            "3. Be concise and preserve the exact output format requested by the Question.\n"
+            "4. Answer all parts supported by the evidence. For unsupported parts, explicitly mark them as not found in the evidence instead of guessing; do not discard supported parts."
+        )
+        if task_type == "paper" or "paper" in query.lower() or "citation" in query.lower():
+            instruction += " For paper citation questions, output valid JSON with the requested keys and values only."
+        elif task_type == "legal" or "judgment" in query.lower() or "result" in query.lower():
+            instruction += " For judgment questions, preserve the requested document titles and result numbers only."
+        elif task_type == "financial" or "company" in query.lower() or "equity" in query.lower():
+            instruction += " For financial questions, retain the source table, values, and units needed by the question."
     return generate(tokenizer, model, [{"role": "user", "content": f"Instruction:\n{instruction}\n\nQuestion:\n{query}\n\nRetrieval:\n{retrieval}"}], max_new_tokens, context_limit)
 
 
@@ -257,9 +321,21 @@ def main() -> None:
         started = time.time()
         try:
             kb_info, structured = construct(tokenizer, model, args.prompts_dir, item["query"], item["chosen"], item["documents"], args.context_limit, args.max_new_tokens_structure)
-            raw_decomposition, subqueries = decompose(tokenizer, model, args.prompts_dir, item["query"], kb_info, args.context_limit, args.max_subqueries, args.max_new_tokens_answer)
-            evidence = extract(tokenizer, model, item["chosen"], item["query"], subqueries, structured, args.context_limit, args.max_new_tokens_answer)
-            answer = merge(tokenizer, model, item["query"], subqueries, evidence, item["chosen"], args.context_limit, args.max_new_tokens_answer)
+            raw_decomposition, subqueries = decompose(
+                tokenizer, model, args.prompts_dir, item["query"], kb_info,
+                args.context_limit, args.max_subqueries, args.max_new_tokens_answer,
+                args.query_only_decomposition,
+            )
+            evidence = extract(
+                tokenizer, model, item["chosen"], item["query"], subqueries,
+                structured, args.context_limit, args.max_new_tokens_answer,
+                args.strict_grounding,
+            )
+            answer = merge(
+                tokenizer, model, item["query"], subqueries, evidence, item["chosen"],
+                args.context_limit, args.max_new_tokens_answer, args.strict_grounding,
+                str(row.get("type", "")),
+            )
             leaves = gold_leaves(row["answer"])
             normalized_answer = normalize(answer)
             hits = [leaf for leaf in leaves if normalize(leaf) in normalized_answer]
@@ -290,6 +366,8 @@ def main() -> None:
         "exact_canonical_match": sum(row["exact_canonical_match"] for row in predictions) / len(predictions) if predictions else None,
         "route_counts": dict(sorted(Counter(row["selected_structure"] for row in predictions).items())), "per_type": by_type,
         "base_model": str(args.base_model), "router_adapter": str(args.router_adapter), "context_limit": args.context_limit,
+        "query_only_decomposition": args.query_only_decomposition,
+        "strict_grounding": args.strict_grounding,
         "protocol": "Official Loong source set, public StructRAG module order, local Qwen2.5-1.5B; whole-document preparation without tokenizer truncation.",
         "evaluation_caveat": "These auxiliary string metrics are not the authors' GPT-4 score. Run the official Loong step-3 GPT-4 evaluator with a user-provided API configuration for comparable paper scores.",
     }

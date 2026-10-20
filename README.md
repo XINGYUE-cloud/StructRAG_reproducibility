@@ -115,6 +115,14 @@ It writes `routes.jsonl`, `predictions.jsonl`, `errors.jsonl`,
 truncates a document. Samples with no whole document fitting the input budget
 are counted as preparation/route exclusions.
 
+For an isolated semantic-quality experiment, use a **new** output directory
+and add `--query-only-decomposition --strict-grounding`. The resumable runner
+stores the settings and prompt-template fingerprint in `run_config.json` and
+refuses to mix checkpoints made with different settings. See
+[`docs/SEMANTIC_IMPROVEMENT_EXPERIMENT_20261020.md`](docs/SEMANTIC_IMPROVEMENT_EXPERIMENT_20261020.md)
+for the controlled smoke-test and full-run protocol. These flags are an
+experimental pipeline variant, not a change to the released-prompt baseline.
+
 The paper's official Loong score cannot be reproduced without the evaluator
 API used by `Loong/src/step3_model_evaluate.py`. This repository reports only
 auditable auxiliary metrics (`exact_canonical_match`, `gold_leaf_recall`,
