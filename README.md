@@ -122,6 +122,11 @@ refuses to mix checkpoints made with different settings. See
 [`docs/SEMANTIC_IMPROVEMENT_EXPERIMENT_20261020.md`](docs/SEMANTIC_IMPROVEMENT_EXPERIMENT_20261020.md)
 for the controlled smoke-test and full-run protocol. These flags are an
 experimental pipeline variant, not a change to the released-prompt baseline.
+The first official smoke comparison did not show an overall gain: query-only
+was `10.2075/100` versus `10.2830/100` on the same 53 IDs, while strict
+grounding fell to `1.4167/100` on 48 completed IDs. The detailed paired report
+is [`docs/SEMANTIC_IMPROVEMENT_RESULTS_20261020.md`](docs/SEMANTIC_IMPROVEMENT_RESULTS_20261020.md);
+the strict variant was therefore not run on the full 1,435 examples.
 
 The paper's official Loong score cannot be reproduced without the evaluator
 API used by `Loong/src/step3_model_evaluate.py`. This repository reports only

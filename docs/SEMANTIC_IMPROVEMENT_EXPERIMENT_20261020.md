@@ -38,4 +38,7 @@ CUDA_VISIBLE_DEVICES=0 python -m src.run_official_loong_structrag_qwen_resume \
 
 ## 当前状态
 
-本地代码与回归测试已完成。当前服务器 SSH 连接可达，但本机现有密钥没有通过账号认证，因此尚不能安全检查空闲 GPU、上传新代码或运行 smoke；没有新的模型预测或语义分数，改进效果待服务器实验验证。服务器内容未作任何修改。
+服务器 smoke 已完成并记录在
+[`docs/SEMANTIC_IMPROVEMENT_RESULTS_20261020.md`](SEMANTIC_IMPROVEMENT_RESULTS_20261020.md)。
+Query-only 在 53 条成对样本上整体基本持平，strict grounding 明显下降，
+因此没有启动全量增强推理。所有输出都写入新目录；服务器原有目录和进程未被删除、终止或修改。
