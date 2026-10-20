@@ -51,9 +51,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-samples", type=int, default=0)
     parser.add_argument("--stratified", action="store_true")
     parser.add_argument("--seed", type=int, default=20261013)
+    parser.add_argument(
+        "--router-classes",
+        choices=("released-three", "paper-five"),
+        default="released-three",
+        help="Use the released three-label router prompt, or the paper's five-structure prompt.",
+    )
     parser.add_argument("--max-subqueries", type=int, default=4)
-    parser.add_argument("--max-new-tokens-structure", type=int, default=512)
-    parser.add_argument("--max-new-tokens-answer", type=int, default=384)
+    parser.add_argument("--max-new-tokens-structure", type=int, default=4096)
+    parser.add_argument("--max-new-tokens-answer", type=int, default=4096)
     parser.add_argument(
         "--query-only-decomposition",
         action="store_true",
@@ -147,11 +153,17 @@ def run_config(args: argparse.Namespace) -> dict[str, Any]:
     """Return the immutable settings that define one resumable experiment."""
 
     prompt_hash = hashlib.sha256()
-    for name in ("construct_graph.txt", "construct_table.txt", "decompose.txt"):
+    for name in (
+        "construct_graph.txt",
+        "construct_table.txt",
+        "construct_algorithm.txt",
+        "construct_catalogue.txt",
+        "decompose.txt",
+    ):
         prompt_hash.update(name.encode("utf-8"))
         prompt_hash.update((args.prompts_dir / name).read_bytes())
     return {
-        "pipeline_revision": "strict-grounding-query-only-v1",
+        "pipeline_revision": "paper-aligned-five-structure-v2",
         "dataset": str(args.dataset.resolve()),
         "base_model": str(args.base_model.resolve()),
         "router_adapter": str(args.router_adapter.resolve()),
@@ -161,6 +173,7 @@ def run_config(args: argparse.Namespace) -> dict[str, Any]:
         "max_samples": args.max_samples,
         "stratified": args.stratified,
         "seed": args.seed,
+        "router_classes": args.router_classes,
         "max_subqueries": args.max_subqueries,
         "max_new_tokens_structure": args.max_new_tokens_structure,
         "max_new_tokens_answer": args.max_new_tokens_answer,
@@ -284,6 +297,7 @@ def write_metrics(
         "per_type": by_type,
         "base_model": str(args.base_model),
         "router_adapter": str(args.router_adapter),
+        "router_classes": args.router_classes,
         "context_limit": args.context_limit,
         "query_only_decomposition": args.query_only_decomposition,
         "strict_grounding": args.strict_grounding,
@@ -365,6 +379,7 @@ def main() -> None:
                         query,
                         [document["title"] for document in documents],
                         args.context_limit,
+                        args.router_classes,
                     )
                     record = route_record(row, query, chosen, raw)
                     append_jsonl(routes_path, record)

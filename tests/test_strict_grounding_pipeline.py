@@ -46,6 +46,72 @@ resume_runner = import_resume_without_cuda()
 
 
 class StrictGroundingPipelineTests(unittest.TestCase):
+    def test_route_uses_upstream_label_priority_and_five_structures(self):
+        with patch.object(runner, "generate", return_value="graph and table"):
+            selected, _ = runner.route(None, None, "Q", [], 1024)
+        self.assertEqual(selected, "table")
+
+        with patch.object(runner, "generate", return_value="catalogue"):
+            selected, _ = runner.route(None, None, "Q", [], 1024, "paper-five")
+        self.assertEqual(selected, "catalogue")
+
+    def test_router_prompts_keep_official_and_five_class_protocols_separate(self):
+        released = runner.router_prompt("Q", [])
+        paper_five = runner.router_prompt("Q", [], "paper-five")
+        self.assertIn("one of the three words", released)
+        self.assertNotIn("algorithm", released.lower())
+        self.assertLess(released.index("Generally speaking"), released.index("Now, given"))
+        self.assertLess(released.index("Now, given"), released.index("Simply output"))
+        self.assertIn("one of the five words", paper_five)
+        self.assertIn("catalogue", paper_five.lower())
+
+    def test_chunk_extraction_preserves_source_title(self):
+        with patch.object(runner, "generate", return_value="supported fact"):
+            evidence = runner.extract(
+                None, None, "chunk", "Q", ["Q"], ["Document A: source text"], 1024, 32
+            )
+        self.assertEqual(evidence, ["Retrieval result for Document A: supported fact"])
+
+    def test_algorithm_and_catalogue_use_released_structure_prompts(self):
+        prompts = {
+            "construct_algorithm.txt": "ALGORITHM {requirement} {raw_content}",
+            "construct_catalogue.txt": "CATALOGUE {requirement} {raw_content}",
+        }
+
+        def fake_read_prompt(_directory, filename):
+            return prompts[filename]
+
+        def fake_generate(_tokenizer, _model, messages, _tokens, _context):
+            return messages[0]["content"]
+
+        document = {"title": "Doc A", "document": "Source content"}
+        with patch.object(runner, "read_prompt", side_effect=fake_read_prompt), patch.object(
+            runner, "generate", side_effect=fake_generate
+        ):
+            _, algorithm = runner.construct(
+                None, None, Path("prompts"), "Q", "algorithm", [document], 1024, 32
+            )
+            _, catalogue = runner.construct(
+                None, None, Path("prompts"), "Q", "catalogue", [document], 1024, 32
+            )
+        self.assertIn("ALGORITHM", algorithm[0])
+        self.assertIn("CATALOGUE", catalogue[0])
+
+    def test_algorithm_and_catalogue_extraction_use_structure_specific_prompts(self):
+        captured = []
+
+        def fake_generate(_tokenizer, _model, messages, _tokens, _context):
+            captured.append(messages[0]["content"])
+            return "evidence"
+
+        with patch.object(runner, "generate", side_effect=fake_generate):
+            runner.extract(None, None, "algorithm", "Q", ["Q"], ["Rules"], 1024, 32)
+            runner.extract(None, None, "catalogue", "Q", ["Q"], ["Outline"], 1024, 32)
+        self.assertIn("Algorithms:", captured[0])
+        self.assertIn("algorithm descriptions", captured[0])
+        self.assertIn("Catalogues:", captured[1])
+        self.assertIn("catalogue", captured[1])
+
     def test_query_only_decomposition_does_not_generate(self):
         with patch.object(runner, "generate", side_effect=AssertionError("generation should not run")):
             raw, questions = runner.decompose(
@@ -122,7 +188,13 @@ class StrictGroundingPipelineTests(unittest.TestCase):
             root = Path(directory)
             prompts = root / "prompts"
             prompts.mkdir()
-            for name in ("construct_graph.txt", "construct_table.txt", "decompose.txt"):
+            for name in (
+                "construct_graph.txt",
+                "construct_table.txt",
+                "construct_algorithm.txt",
+                "construct_catalogue.txt",
+                "decompose.txt",
+            ):
                 (prompts / name).write_text(name, encoding="utf-8")
             args = types.SimpleNamespace(
                 dataset=root / "dataset.jsonl",
@@ -133,9 +205,10 @@ class StrictGroundingPipelineTests(unittest.TestCase):
                 max_samples=20,
                 stratified=True,
                 seed=17,
+                router_classes="released-three",
                 max_subqueries=4,
-                max_new_tokens_structure=512,
-                max_new_tokens_answer=384,
+                max_new_tokens_structure=4096,
+                max_new_tokens_answer=4096,
                 query_only_decomposition=True,
                 strict_grounding=True,
             )

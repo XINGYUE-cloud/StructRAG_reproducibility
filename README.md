@@ -22,7 +22,11 @@ LLM/GPT-4 evaluation protocol.
   documents into the title-marker format expected by the released StructRAG
   code. It includes whole documents only and records omitted documents.
 - `src/run_official_loong_structrag_qwen.py`: single-GPU implementation of
-  the released five-stage order for the three public router labels.
+  the released five-stage order, with construction and extraction paths for
+  all five paper structures. `--router-classes released-three` is the default
+  for the public adapter; `paper-five` is an explicit option for a compatible
+  five-class adapter. The released router preference set still trains only
+  `chunk`, `table`, and `graph`.
 - `src/run_official_loong_structrag_qwen_resume.py`: checkpointed runner that
   appends each route and answer to JSONL, so an interrupted SSH session can be
   resumed without repeating completed examples.
@@ -127,6 +131,14 @@ was `10.2075/100` versus `10.2830/100` on the same 53 IDs, while strict
 grounding fell to `1.4167/100` on 48 completed IDs. The detailed paired report
 is [`docs/SEMANTIC_IMPROVEMENT_RESULTS_20261020.md`](docs/SEMANTIC_IMPROVEMENT_RESULTS_20261020.md);
 the strict variant was therefore not run on the full 1,435 examples.
+
+The paper-method alignment update is recorded in
+[`docs/PAPER_METHOD_ALIGNMENT_20261020.md`](docs/PAPER_METHOD_ALIGNMENT_20261020.md).
+It restores the public `algorithm` and `catalogue` module paths in the official
+runner, matches the upstream router label priority, preserves document titles
+in chunk retrieval results, and uses the upstream Qwen API's 4096-token default
+generation allowance. This is an implementation alignment, not a measured
+semantic-score gain; the public Loong router adapter remains three-class.
 
 The paper's official Loong score cannot be reproduced without the evaluator
 API used by `Loong/src/step3_model_evaluate.py`. This repository reports only

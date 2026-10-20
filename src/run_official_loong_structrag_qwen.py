@@ -24,7 +24,8 @@ from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
-ROUTER_LABELS = ("table", "graph", "chunk")
+RELEASED_ROUTER_LABELS = ("table", "graph", "chunk")
+PAPER_ROUTER_LABELS = ("table", "graph", "algorithm", "catalogue", "chunk")
 
 
 def parse_args() -> argparse.Namespace:
@@ -38,9 +39,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-samples", type=int, default=0)
     parser.add_argument("--stratified", action="store_true")
     parser.add_argument("--seed", type=int, default=20261013)
+    parser.add_argument(
+        "--router-classes",
+        choices=("released-three", "paper-five"),
+        default="released-three",
+        help="Use the released three-label router prompt, or the paper's five-structure prompt.",
+    )
     parser.add_argument("--max-subqueries", type=int, default=4)
-    parser.add_argument("--max-new-tokens-structure", type=int, default=512)
-    parser.add_argument("--max-new-tokens-answer", type=int, default=384)
+    parser.add_argument("--max-new-tokens-structure", type=int, default=4096)
+    parser.add_argument("--max-new-tokens-answer", type=int, default=4096)
     parser.add_argument(
         "--query-only-decomposition",
         action="store_true",
@@ -121,24 +128,54 @@ def generate(tokenizer, model, messages: list[dict[str, str]], max_new_tokens: i
     return tokenizer.decode(output[0][inputs["input_ids"].shape[1] :], skip_special_tokens=True).strip()
 
 
-def router_prompt(query: str, titles: list[str]) -> str:
+def router_prompt(query: str, titles: list[str], router_classes: str = "released-three") -> str:
+    if router_classes == "paper-five":
+        guidance = (
+            "To generate answers to questions based on documents, I need to structure the documents as a table, graph, algorithm, catalogue, or chunk. \n"
+            "Generally speaking, statistical questions prefer tables, chain reasoning questions prefer graphs, planning and conditional-decision questions prefer algorithms, hierarchical-summary questions prefer catalogues, and single-hop QA questions prefer chunks. \n"
+        )
+        choices = "Simply output one of the five words: table, graph, algorithm, catalogue, or chunk, without providing any further explanation.\n\n"
+    elif router_classes == "released-three":
+        guidance = (
+            "To generate answers to questions based on documents, I need to structure the documents as a table, graph, or chunk. \n"
+            "Generally speaking, statistical questions prefer tables, chain reasoning questions prefer graphs, and single-hop QA questions prefer chunks. \n"
+        )
+        choices = "Simply output one of the three words: table, graph, or chunk, without providing any further explanation.\n\n"
+    else:
+        raise ValueError(f"Unsupported router class set: {router_classes}")
     return (
         "Instruction:\n"
-        "To generate answers to questions based on documents, I need to structure the documents as a table, graph, or chunk. \n"
-        "Generally speaking, statistical questions prefer tables, chain reasoning questions prefer graphs, and single-hop QA questions prefer chunks. \n"
+        f"{guidance}"
         "Now, given the following document information and question, please determine which type of knowledge structure I should use. \n"
-        "Simply output one of the three words: table, graph, or chunk, without providing any further explanation.\n\n"
+        f"{choices}"
         f"Doc Info:\n {' '.join('《' + title + '》' for title in titles)}\n\n"
         f"Query:\n {query}\n\nDecision:"
     )
 
 
-def route(tokenizer, model, query: str, titles: list[str], context_limit: int) -> tuple[str, str]:
+def route(
+    tokenizer,
+    model,
+    query: str,
+    titles: list[str],
+    context_limit: int,
+    router_classes: str = "released-three",
+) -> tuple[str, str]:
     raw = generate(
-        tokenizer, model, [{"role": "user", "content": router_prompt(query, titles)}], 8, context_limit
+        tokenizer,
+        model,
+        [{"role": "user", "content": router_prompt(query, titles, router_classes)}],
+        8,
+        context_limit,
     )
-    match = re.search(r"\b(table|graph|chunk)\b", raw.lower())
-    return (match.group(1) if match else "chunk"), raw
+    lowered = raw.lower()
+    # Match the released router implementation: first recognized label wins,
+    # with chunk as the fallback when the model emits no supported label.
+    labels = PAPER_ROUTER_LABELS if router_classes == "paper-five" else RELEASED_ROUTER_LABELS
+    for label in labels[:-1]:
+        if label in lowered:
+            return label, raw
+    return "chunk", raw
 
 
 def construct(tokenizer, model, prompts_dir: Path, query: str, structure: str, documents: list[dict[str, str]], context_limit: int, max_new_tokens: int) -> tuple[str, list[str]]:
@@ -153,6 +190,20 @@ def construct(tokenizer, model, prompts_dir: Path, query: str, structure: str, d
         template = read_prompt(prompts_dir, "construct_table.txt")
         instruction = f"Query is {query}, please extract relevant complete tables from the document based on the attributes and keywords mentioned in the Query. Note: retain table titles and source information."
         prompts = [template.format(instruction=instruction, content=document["document"]) for document in documents]
+    elif structure == "algorithm":
+        template = read_prompt(prompts_dir, "construct_algorithm.txt")
+        instruction = f"Query is {query}, please extract relevant algorithms from the document based on the Query."
+        prompts = [
+            template.format(requirement=instruction, raw_content=document["document"])
+            for document in documents
+        ]
+    elif structure == "catalogue":
+        template = read_prompt(prompts_dir, "construct_catalogue.txt")
+        instruction = f"Query:\n{query}\nPlease extract relevant catalogues from the document based on the Query."
+        prompts = [
+            template.format(requirement=instruction, raw_content=document["document"])
+            for document in documents
+        ]
     else:
         raise ValueError(f"Unsupported released router output: {structure}")
     outputs = [
@@ -207,7 +258,8 @@ def extract(
     if structure == "chunk":
         composed = "\n".join(subqueries)
         return [
-            generate(tokenizer, model, [{"role": "user", "content": f"Instruction:\nAnswer the Query based on the given Document.{grounding}\n\nQuery:\n{composed}\n\nDocument:\n{chunk}\n\nOutput:"}], max_new_tokens, context_limit)
+            f"Retrieval result for {chunk.partition(':')[0]}: "
+            + generate(tokenizer, model, [{"role": "user", "content": f"Instruction:\nAnswer the Query based on the given Document.{grounding}\n\nQuery:\n{composed}\n\nDocument:\n{chunk}\n\nOutput:"}], max_new_tokens, context_limit)
             for chunk in structured
         ]
     if structure == "table":
@@ -217,6 +269,14 @@ def extract(
     elif structure == "graph":
         instruction = "According to the query, filter out the triples from all triples in the graph that can help answer the query.\nNote, carefully analyze the entities and relationships mentioned in the query and filter based on this information." + grounding
         title = "Graphs"
+        contents = "\n\n".join(structured)
+    elif structure == "algorithm":
+        instruction = "According to the query, filter out information from algorithm descriptions that can help answer the query.\nNote, carefully analyze the entities and relationships mentioned in the query and filter based on this information." + grounding
+        title = "Algorithms"
+        contents = "\n\n".join(structured)
+    elif structure == "catalogue":
+        instruction = "According to the query, filter out information from the catalogue that can help answer the query.\nNote, carefully analyze the entities and relationships mentioned in the query and filter based on this information." + grounding
+        title = "Catalogues"
         contents = "\n\n".join(structured)
     else:
         raise ValueError(structure)
@@ -306,7 +366,14 @@ def main() -> None:
         try:
             documents = parse_documents(row["docs"])
             query = row["prompt_template"].format(instruction=row["instruction"], question=row["question"], docs="......")
-            chosen, raw = route(tokenizer, router_model, query, [document["title"] for document in documents], args.context_limit)
+            chosen, raw = route(
+                tokenizer,
+                router_model,
+                query,
+                [document["title"] for document in documents],
+                args.context_limit,
+                args.router_classes,
+            )
             routed.append({"row": row, "query": query, "documents": documents, "chosen": chosen, "raw_route": raw})
             print(f"routed {index}/{len(rows)} {row['id']} as {chosen}", flush=True)
         except Exception as exc:
