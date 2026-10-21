@@ -17,6 +17,7 @@ data/*
 !data/official_difficulty_five_type_v2/**
 results/*
 !results/.gitkeep
+outputs/*
 logs/*
 !logs/.gitkeep
 

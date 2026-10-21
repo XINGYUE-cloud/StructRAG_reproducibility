@@ -45,6 +45,64 @@ LLM/GPT-4 evaluation protocol.
 - `prompts/`: public StructRAG prompt templates used by the runners.
 - `docs/`: paper notes, protocol, limitations, and experiment records.
 
+## Five-Type Router Evaluation Matrix (2026-10-21)
+
+The current external test sets are the two supplied archives only:
+
+- `VALUE-KAO-PersonWork-EN-v2-Experiment-1k.zip` (1,000 test questions)
+- `RCAEval-RE2-Microservice-v1.zip` (1,538 questions in its `test` split)
+
+They are evaluation-only. They are not used for preference generation, router
+training, prompt tuning, or validation. The generated training corpus supplies
+documents for a separate LLM preference-generation step. For each source, the
+LLM synthesizes a question and answer, quotes supporting evidence, writes five
+structure-specific solving plans, ranks those plans, and creates a
+best-versus-second-best DPO pair. The trained router prompt contains only the
+question and document overview; its only output is one of `chunk`, `graph`,
+`table`, `algorithm`, or `catalogue`.
+
+The preference generator is `src/build_llm_five_type_preferences.py`. It checks
+that the evidence quotation appears verbatim in the source, records the gold
+answer separately from the router prompt, retries invalid responses, and
+splits by source unit. Example:
+
+```bash
+python -m src.build_llm_five_type_preferences \
+  --source data/complex_five_type_v3_verified_20261015/train.jsonl \
+  --output-dir outputs/llm_five_type_preferences \
+  --config .env.judge.local --limit 600 --workers 4
+```
+
+`src/evaluate_external_five_stage_datasets.py` supports direct long-context,
+lexical RAG, fixed structure, router-selected full StructRAG, random route,
+task-mapped proxy route, no-structuring, and no-decomposition comparisons. It
+records per-stage latency, generation token counts, structure outputs, task
+type, document length, and answer metrics. The proxy route is not a substitute
+for a human oracle.
+
+Blinded human router annotation sheets can be exported with
+`src/export_router_annotation_template.py`; after they are filled,
+`src/score_router_annotations.py` computes strict Accuracy, Macro-F1,
+confusion matrix, Top-2 accuracy, and tie-aware accuracy. Human sheets are
+blank by design; model outputs are never inserted as gold labels. Until the
+filled annotations are available, no human-gold external router score or true
+human-oracle end-to-end score is claimed.
+
+The complete protocol and existing-result boundaries are documented in
+[`docs/EXPERIMENT_MATRIX_20261021.md`](docs/EXPERIMENT_MATRIX_20261021.md).
+Historical 100% synthetic router scores remain generator-label diagnostics and
+must not be presented as human-labeled performance.
+
+The 2026-10-22 run trained Qwen2.5-1.5B with LoRA-DPO on 1,191 deduplicated
+LLM-ranked five-structure preferences. Its 120-row preference holdout reached
+80.00% Accuracy / 74.90% Macro-F1. On the supplied archives, task-mapped proxy
+scores were 42.10% / 20.11% for PersonWork and 74.45% / 73.59% for RCAEval
+Accuracy / Macro-F1; these are not human-gold routing scores. A paired
+end-to-end pilot (2 rows per archive per mode, 32-token answer cap) produced a
+3.79/100 overall semantic-judge mean across 48 answers and did not show a full
+pipeline gain. See [`docs/EXTERNAL_EVALUATION_RESULTS_20261022.md`](docs/EXTERNAL_EVALUATION_RESULTS_20261022.md)
+for per-mode results and limitations.
+
 The generated synthetic benchmark and router splits used for the local controlled
 experiments are included under `data/`. Model weights, server logs, checkpoints,
 archives, secrets, and external official benchmark downloads are intentionally
