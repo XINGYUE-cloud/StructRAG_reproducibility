@@ -108,6 +108,12 @@ experiments are included under `data/`. Model weights, server logs, checkpoints,
 archives, secrets, and external official benchmark downloads are intentionally
 excluded from this repository.
 
+Runtime and token accounting for the complete 2,538-row router test and the
+end-to-end pilot is recorded in
+[`docs/RUNTIME_TOKEN_ACCOUNTING_20261022.md`](docs/RUNTIME_TOKEN_ACCOUNTING_20261022.md).
+The evaluation scripts persist process wall-clock time and per-stage token
+counts so subsequent full runs are directly comparable.
+
 ## Included Synthetic Data
 
 `data/benchmark/` and `data/router/` contain the fixed-seed synthetic data used

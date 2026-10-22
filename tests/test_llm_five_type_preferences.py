@@ -2,11 +2,19 @@ from __future__ import annotations
 
 import unittest
 
-from src.build_llm_five_type_preferences import preference_row, split_rows, validate_candidate
+from src.build_llm_five_type_preferences import preference_row, source_prompt, split_rows, validate_candidate
 from src.five_type_router_data_v1 import FIVE_LABELS, validate_rows
 
 
 class LLMPreferenceTests(unittest.TestCase):
+    def test_output_language_is_explicit_in_synthesis_prompt(self):
+        prompt = source_prompt(
+            {"id": "source-1", "documents": [{"title": "Doc", "content": "fact"}]},
+            100,
+            output_language="English",
+        )
+        self.assertIn("in English", prompt[0]["content"])
+
     def candidate(self):
         return {
             "question": "Which person has the required skill?",

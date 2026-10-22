@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import time
 import zipfile
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -106,12 +107,13 @@ def rcaeval_rows(path: Path) -> list[dict[str, Any]]:
         return rows
 
 
-def predict(tokenizer: Any, model: Any, query: str, titles: list[str]) -> tuple[str, str]:
+def predict(tokenizer: Any, model: Any, query: str, titles: list[str]) -> dict[str, Any]:
     import torch
 
     messages = router_messages(query, titles)
     prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=1024).to("cuda")
+    started = time.perf_counter()
     with torch.inference_mode():
         output = model.generate(
             **inputs,
@@ -120,9 +122,16 @@ def predict(tokenizer: Any, model: Any, query: str, titles: list[str]) -> tuple[
             pad_token_id=tokenizer.eos_token_id,
             eos_token_id=tokenizer.eos_token_id,
         )
+    elapsed = time.perf_counter() - started
     raw = tokenizer.decode(output[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True).strip()
     match = re.search(r"\b(chunk|table|graph|algorithm|catalogue)\b", raw.lower())
-    return (match.group(1) if match else "invalid"), raw
+    return {
+        "predicted_structure": match.group(1) if match else "invalid",
+        "raw_output": raw,
+        "input_tokens": int(inputs["input_ids"].shape[-1]),
+        "output_tokens": max(0, int(output[0].shape[-1]) - int(inputs["input_ids"].shape[-1])),
+        "latency_seconds": elapsed,
+    }
 
 
 def metrics(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -165,6 +174,7 @@ def main() -> None:
     parser.add_argument("--max-samples", type=int, default=0)
     parser.add_argument("--resume", action="store_true")
     args = parser.parse_args()
+    wall_started = time.perf_counter()
 
     if args.output_dir.exists() and not args.resume:
         raise FileExistsError(f"Refusing to overwrite output directory: {args.output_dir}")
@@ -195,8 +205,8 @@ def main() -> None:
     with prediction_path.open("a", encoding="utf-8") as output:
         pending = [row for row in rows if (row["dataset"], row["id"]) not in done]
         for index, row in enumerate(pending, start=1):
-            predicted, raw = predict(tokenizer, model, row["query"], row["titles"])
-            item = {**row, "predicted_structure": predicted, "raw_output": raw}
+            prediction = predict(tokenizer, model, row["query"], row["titles"])
+            item = {**row, **prediction}
             output.write(json.dumps(item, ensure_ascii=False) + "\n")
             output.flush()
             predictions.append(item)
@@ -214,6 +224,15 @@ def main() -> None:
         "downstream_generation": False,
         "semantic_judge": False,
         "datasets": by_dataset,
+        "cost_and_speed": {
+            "total_input_tokens": sum(int(row.get("input_tokens", 0)) for row in predictions),
+            "total_output_tokens": sum(int(row.get("output_tokens", 0)) for row in predictions),
+            "total_tokens": sum(int(row.get("input_tokens", 0)) + int(row.get("output_tokens", 0)) for row in predictions),
+            "generation_calls": len(predictions),
+            "generation_seconds": sum(float(row.get("latency_seconds", 0.0)) for row in predictions),
+            "wall_clock_seconds": time.perf_counter() - wall_started,
+            "timing_scope": "process wall-clock including archive parsing, model load, inference, and metric writing",
+        },
         "labeling_note": "Neither supplied test package contains human-annotated StructRAG five-structure targets. Scores are accuracy and macro-F1 on task-derived proxy labels, not official five-class routing accuracy. PersonWork maps task types to graph/table/algorithm; RCAEval maps root-cause ranking to graph and fault classification to table. Neither dataset evaluates chunk or catalogue.",
     }
     (args.output_dir / "router_metrics.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")

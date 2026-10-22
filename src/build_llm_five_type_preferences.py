@@ -33,7 +33,12 @@ def parse_json_object(content: str) -> dict[str, Any]:
     return value
 
 
-def source_prompt(row: dict[str, Any], content_limit: int, target_family: str | None = None) -> list[dict[str, str]]:
+def source_prompt(
+    row: dict[str, Any],
+    content_limit: int,
+    target_family: str | None = None,
+    output_language: str = "source language",
+) -> list[dict[str, str]]:
     documents = row.get("documents") or []
     sources = []
     for document in documents:
@@ -51,6 +56,7 @@ def source_prompt(row: dict[str, Any], content_limit: int, target_family: str | 
             "role": "system",
             "content": (
                 "You create router preference data for knowledge-intensive QA. "
+                f"Write the synthesized question, overview, and all five plans in {output_language}. "
                 "Use only the supplied source documents. First synthesize one new, answerable question that requires their facts. "
                 + (f"The question must primarily be a {target_family} task. " if target_family else "")
                 + "Return its short gold answer and one exact supporting quotation copied from the source text. "
@@ -93,7 +99,7 @@ def validate_candidate(value: dict[str, Any]) -> dict[str, Any]:
     return {"question": question.strip(), "answer": answer.strip(), "evidence_quote": evidence_quote.strip(), "task_family": family, "overview": overview.strip(), "plans": plans, "ranking": ranking}
 
 
-def api_request(base_url: str, api_key: str, model: str, messages: list[dict[str, str]], timeout: float, retries: int = 2) -> dict[str, Any]:
+def api_request(base_url: str, api_key: str, model: str, messages: list[dict[str, str]], timeout: float, retries: int = 2) -> tuple[dict[str, Any], dict[str, int], float]:
     payload = json.dumps({"model": model, "messages": messages, "temperature": 0.2}, ensure_ascii=False).encode("utf-8")
     for attempt in range(retries + 1):
         req = request.Request(
@@ -103,9 +109,16 @@ def api_request(base_url: str, api_key: str, model: str, messages: list[dict[str
             method="POST",
         )
         try:
+            started = time.perf_counter()
             with request.urlopen(req, timeout=timeout) as response:
                 value = json.loads(response.read().decode("utf-8"))
-            return parse_json_object(value["choices"][0]["message"]["content"])
+            elapsed = time.perf_counter() - started
+            raw_usage = value.get("usage") or {}
+            usage = {
+                key: int(raw_usage.get(key, 0) or 0)
+                for key in ("prompt_tokens", "completion_tokens", "total_tokens")
+            }
+            return parse_json_object(value["choices"][0]["message"]["content"]), usage, elapsed
         except error.HTTPError as exc:
             if exc.code not in {408, 409, 429, *range(500, 600)} or attempt >= retries:
                 raise
@@ -174,6 +187,7 @@ def main() -> None:
     parser.add_argument("--timeout", type=float, default=120)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--balance-task-families", action="store_true")
+    parser.add_argument("--output-language", default="source language")
     parser.add_argument("--seed", type=int, default=20261021)
     parser.add_argument("--resume", action="store_true")
     args = parser.parse_args()
@@ -208,8 +222,17 @@ def main() -> None:
         for attempt in range(3):
             try:
                 target_family = source_family.get(str(source.get("id", "")))
-                candidate = api_request(base_url, api_key, model, source_prompt(source, args.content_limit, target_family), args.timeout)
-                return preference_row(source, candidate)
+                candidate, usage, elapsed = api_request(
+                    base_url,
+                    api_key,
+                    model,
+                    source_prompt(source, args.content_limit, target_family, args.output_language),
+                    args.timeout,
+                )
+                row = preference_row(source, candidate)
+                row["api_usage"] = usage
+                row["api_elapsed_seconds"] = elapsed
+                return row
             except (error.URLError, error.HTTPError, TimeoutError, ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
                 last_error = exc
                 if attempt < 2:
@@ -243,6 +266,7 @@ def main() -> None:
         "source_offset": args.offset,
         "source_limit": args.limit,
         "balanced_task_families_requested": args.balance_task_families,
+        "output_language": args.output_language,
         "split_counts": {name: len(rows) for name, rows in splits.items()},
         "split_units": {name: sorted({row["unit_id"] for row in rows}) for name, rows in splits.items()},
         "task_family_counts": {name: {family: sum(row["task_family"] == family for row in rows) for family in sorted({row["task_family"] for row in rows})} for name, rows in splits.items()},
@@ -250,6 +274,13 @@ def main() -> None:
         "protocol": "LLM synthesizes a document-grounded task, writes plans for all five structures, ranks plan suitability, and yields top-vs-second DPO pair",
         "training_scope": "router outputs only the selected structure label",
         "api_key_written": False,
+        "api_usage_recorded_rows": sum(bool(row.get("api_usage")) for row in cached),
+        "api_usage_unrecorded_rows": sum(not bool(row.get("api_usage")) for row in cached),
+        "api_usage_totals": {
+            key: sum(int((row.get("api_usage") or {}).get(key, 0)) for row in cached)
+            for key in ("prompt_tokens", "completion_tokens", "total_tokens")
+        },
+        "api_elapsed_seconds": sum(float(row.get("api_elapsed_seconds", 0.0)) for row in cached),
     }
     (args.output_dir / "metadata.json").write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(metadata, ensure_ascii=False, indent=2))

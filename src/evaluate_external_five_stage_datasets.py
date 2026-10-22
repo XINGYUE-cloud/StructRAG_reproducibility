@@ -474,6 +474,7 @@ def main() -> None:
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--resume", action="store_true")
     args = parser.parse_args()
+    wall_started = time.perf_counter()
 
     import torch as torch_runtime
     from peft import PeftModel as PeftModelRuntime
@@ -555,6 +556,8 @@ def main() -> None:
         "pipeline": ["router", "structurizer", "decomposer", "precise_extractor", "answer_merger"],
         "semantic_judge": "not included; run cache-first judge as a separate stage",
         "labeling_note": "proxy_oracle uses task-derived labels, not human-annotated ideal routes. Router accuracy in this run is agreement with those proxy labels only.",
+        "wall_clock_seconds": time.perf_counter() - wall_started,
+        "timing_scope": "process wall-clock time including model load, archive parsing, generation, and metric writing",
         **run_metrics(predictions),
     }
     (args.output_dir / "metrics.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
